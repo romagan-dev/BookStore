@@ -1,4 +1,3 @@
 package com.bookstore;
 
-public class Main {
-}
+public class Main {}

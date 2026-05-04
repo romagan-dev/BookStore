@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.romagan</groupId>
+  <groupId>com.bookstore</groupId>
   <artifactId>bookstore-management</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
@@ -13,7 +13,7 @@
     <java.version>21</java.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
-    <project.build.sourceEndcoding>UTF-8</project.build.sourceEndcoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
   <javafx.version>21.0.2</javafx.version>
   <sqlite.version>3.45.1.0</sqlite.version>
@@ -108,16 +108,26 @@
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>2.43.0</version>
+          <version>2.44.2</version>
           <configuration>
             <java>
               <googleJavaFormat>
-                <version>1.19.2</version>
+                <!-- Ця версія підтримує Java 21 без конфліктів з внутрішнім javac -->
+                <version>1.22.0</version>
                 <style>GOOGLE</style>
-                <indentSize>4</indentSize>
+                <reflowLongStrings>true</reflowLongStrings>
               </googleJavaFormat>
+              <removeUnusedImports/>
             </java>
           </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>compile</phase>
+            </execution>
+          </executions>
         </plugin>
 
         <!-- ===== SonarQube — аналіз якості коду ===== -->

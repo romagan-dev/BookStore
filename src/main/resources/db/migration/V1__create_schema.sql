@@ -114,7 +114,7 @@ CREATE INDEX users_email_idx ON users (email);
 -- =============================================================================
 CREATE TABLE clients (
     PRIMARY KEY (client_id),
-    client_id     INTEGER      NOT NULL,
+    client_id     TEXT      NOT NULL,
     first_name    VARCHAR(50)  NOT NULL,
     last_name     VARCHAR(50)  NOT NULL,
     phone         VARCHAR(20),
@@ -139,8 +139,8 @@ CREATE TABLE clients (
 -- =============================================================================
 CREATE TABLE books (
     PRIMARY KEY (book_id),
-    book_id       INTEGER        NOT NULL,
-    category_id   INTEGER        NOT NULL,
+    book_id       TEXT        NOT NULL,
+    category_id   TEXT        NOT NULL,
                   CONSTRAINT books_category_id_categories_fkey
                       FOREIGN KEY (category_id)
                       REFERENCES categories (category_id)
@@ -152,7 +152,7 @@ CREATE TABLE books (
     price         DECIMAL(10, 2) NOT NULL,
                   CONSTRAINT books_price_positive_check
                       CHECK (price > 0),
-    stock_quantity INTEGER        NOT NULL DEFAULT 0,
+    stock_quantity TEXT        NOT NULL DEFAULT 0,
                    CONSTRAINT books_stock_quantity_check
                        CHECK (stock_quantity >= 0),
     description   TEXT
@@ -173,12 +173,12 @@ CREATE INDEX books_category_id_idx ON books (category_id);
 -- =============================================================================
 CREATE TABLE book_authors (
     PRIMARY KEY (book_id, author_id),
-    book_id       INTEGER NOT NULL,
+    book_id       TEXT NOT NULL,
                   CONSTRAINT book_authors_book_id_books_fkey
                       FOREIGN KEY (book_id)
                       REFERENCES books (book_id)
                           ON DELETE CASCADE,
-    author_id     INTEGER NOT NULL,
+    author_id     TEXT NOT NULL,
                   CONSTRAINT book_authors_author_id_authors_fkey
                       FOREIGN KEY (author_id)
                       REFERENCES authors (author_id)
@@ -201,13 +201,13 @@ CREATE INDEX book_authors_author_id_idx ON book_authors (author_id);
 -- =============================================================================
 CREATE TABLE sales (
     PRIMARY KEY (sale_id),
-    sale_id        INTEGER        NOT NULL,
-    user_id        INTEGER        NOT NULL,
+    sale_id        TEXT        NOT NULL,
+    user_id        TEXT        NOT NULL,
                    CONSTRAINT sales_user_id_users_fkey
                        FOREIGN KEY (user_id)
                        REFERENCES users (user_id)
                            ON DELETE RESTRICT,
-    client_id      INTEGER,
+    client_id      TEXT,
                    CONSTRAINT sales_client_id_clients_fkey
                        FOREIGN KEY (client_id)
                        REFERENCES clients (client_id)
@@ -238,18 +238,18 @@ CREATE INDEX sales_sale_date_idx ON sales (sale_date);
 -- =============================================================================
 CREATE TABLE sale_items (
     PRIMARY KEY (sale_item_id),
-    sale_item_id  INTEGER        NOT NULL,
-    sale_id       INTEGER        NOT NULL,
+    sale_item_id  TEXT        NOT NULL,
+    sale_id       TEXT        NOT NULL,
                   CONSTRAINT sale_items_sale_id_sales_fkey
                       FOREIGN KEY (sale_id)
                       REFERENCES sales (sale_id)
                           ON DELETE CASCADE,
-    book_id       INTEGER        NOT NULL,
+    book_id       TEXT        NOT NULL,
                   CONSTRAINT sale_items_book_id_books_fkey
                       FOREIGN KEY (book_id)
                       REFERENCES books (book_id)
                           ON DELETE RESTRICT,
-    quantity      INTEGER        NOT NULL,
+    quantity      TEXT        NOT NULL,
                   CONSTRAINT sale_items_quantity_positive_check
                       CHECK (quantity > 0),
     unit_price    DECIMAL(10, 2) NOT NULL,
@@ -271,8 +271,8 @@ CREATE INDEX sale_items_book_id_idx ON sale_items (book_id);
 -- =============================================================================
 CREATE TABLE supplies (
     PRIMARY KEY (supply_id),
-    supply_id     INTEGER        NOT NULL,
-    supplier_id   INTEGER        NOT NULL,
+    supply_id     TEXT        NOT NULL,
+    supplier_id   TEXT        NOT NULL,
                   CONSTRAINT supplies_supplier_id_suppliers_fkey
                       FOREIGN KEY (supplier_id)
                       REFERENCES suppliers (supplier_id)
@@ -298,18 +298,18 @@ CREATE INDEX supplies_supply_date_idx ON supplies (supply_date);
 -- =============================================================================
 CREATE TABLE supply_items (
     PRIMARY KEY (supply_item_id),
-    supply_item_id INTEGER        NOT NULL,
-    supply_id      INTEGER        NOT NULL,
+    supply_item_id TEXT        NOT NULL,
+    supply_id      TEXT        NOT NULL,
                    CONSTRAINT supply_items_supply_id_supplies_fkey
                        FOREIGN KEY (supply_id)
                        REFERENCES supplies (supply_id)
                            ON DELETE CASCADE,
-    book_id        INTEGER        NOT NULL,
+    book_id        TEXT        NOT NULL,
                    CONSTRAINT supply_items_book_id_books_fkey
                        FOREIGN KEY (book_id)
                        REFERENCES books (book_id)
                            ON DELETE RESTRICT,
-    quantity       INTEGER        NOT NULL,
+    quantity       TEXT        NOT NULL,
                    CONSTRAINT supply_items_quantity_positive_check
                        CHECK (quantity > 0),
     unit_cost      DECIMAL(10, 2) NOT NULL,
