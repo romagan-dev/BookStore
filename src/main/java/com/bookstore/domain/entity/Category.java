@@ -24,7 +24,7 @@ import lombok.ToString;
 public class Category {
 
   /** Первинний ключ. Відповідає {@code category_id} у БД. */
-  private Long id;
+  private UUID id;
 
   /** Назва категорії. Унікальна, не може бути null. */
   private String name;

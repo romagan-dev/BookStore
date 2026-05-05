@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +31,7 @@ import lombok.ToString;
 @Builder
 public class Book {
   /** Первинний ключ. Відповідає {@code book_id} у БД. */
-  private Long id;
+  private UUID id;
 
   /**
    * Категорія книги. Вирішення розбіжності зв'язків: FK {@code category_id} → об'єкт {@link
@@ -38,7 +39,9 @@ public class Book {
    */
   private Category category;
 
-  /** Назва книги. Не може бути null. */
+    private String isbn;
+
+    /** Назва книги. Не може бути null. */
   private String title;
 
   // ** Ціна книги. Завжди більше 0. */
@@ -101,7 +104,7 @@ public class Book {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof Book other)) return false;
-    return id != 0 && id == other.id;
+    return id != null && id == other.id;
   }
 
   @Override
