@@ -39,9 +39,9 @@ public class Book {
    */
   private Category category;
 
-    private String isbn;
+  private String isbn;
 
-    /** Назва книги. Не може бути null. */
+  /** Назва книги. Не може бути null. */
   private String title;
 
   // ** Ціна книги. Завжди більше 0. */

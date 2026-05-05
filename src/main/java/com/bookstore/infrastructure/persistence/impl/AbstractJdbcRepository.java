@@ -2,6 +2,7 @@ package com.bookstore.infrastructure.persistence.impl;
 
 import com.bookstore.infrastructure.persistence.util.ConnectionManager;
 import com.bookstore.infrastructure.persistence.util.DatabaseException;
+import com.bookstore.infrastructure.persistence.util.IdentityMap;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,42 +10,32 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
- * Абстрактний базовий клас для JDBC-репозиторіїв.
+ * Абстрактний базовий клас для JDBC-репозиторіїв з підтримкою Identity Map.
  *
- * <p>Реалізує патерн Template Method: стандартні CRUD-операції визначені у цьому класі,
- * варіативні частини (SQL, маппінг, встановлення параметрів) делегуються підкласам через
- * abstract-методи.
+ * <p>Реалізує патерн Template Method: стандартні CRUD-операції визначені у цьому класі, варіативні
+ * частини делегуються підкласам через abstract-методи.
  *
- * <p>Підкласи зобов'язані реалізувати:
- *
- * <ul>
- *   <li>{@link #mapRow(ResultSet)} — перетворення рядка ResultSet у доменний об'єкт
- *   <li>{@link #getTableName()} — назва таблиці для SELECT COUNT та DELETE
- *   <li>{@link #getIdColumnName()} — назва колонки первинного ключа
- *   <li>{@link #getSelectByIdSql()} — SQL для пошуку за id
- *   <li>{@link #getSelectAllSql()} — SQL для вибірки всіх записів
- *   <li>{@link #getInsertSql()} — SQL для INSERT
- *   <li>{@link #getUpdateSql()} — SQL для UPDATE
- *   <li>{@link #setInsertParams(PreparedStatement, T)} — параметри для INSERT
- *   <li>{@link #setUpdateParams(PreparedStatement, T)} — параметри для UPDATE
- *   <li>{@link #getId(T)} — отримати ID з сутності
- * </ul>
+ * <p>Інтеграція Identity Map: {@link #findById(UUID)} спочатку перевіряє кеш, потім БД. Після
+ * завантаження з БД — автоматично кешує. {@link #deleteById(UUID)} — видаляє з кешу.
  *
  * @param <T> тип доменної сутності
  * @param <ID> тип первинного ключа (UUID)
  */
 public abstract class AbstractJdbcRepository<T, ID> {
 
-    /**
-     * Менеджер з'єднань — єдина залежність базового класу від інфраструктури. {@code protected}
-     * дозволяє підкласам звертатися напряму для специфічних запитів.
-     */
+    /** Менеджер з'єднань — єдина залежність від інфраструктури. */
     protected final ConnectionManager connectionManager;
 
     /**
-     * Конструктор з ін'єкцією залежності ConnectionManager.
+     * Identity Map — кеш завантажених сутностей у рамках сесії. Один екземпляр на репозиторій.
+     */
+    protected final IdentityMap<T> identityMap = new IdentityMap<>();
+
+    /**
+     * Конструктор з ін'єкцією залежності.
      *
      * @param connectionManager менеджер пулу з'єднань
      */
@@ -56,103 +47,72 @@ public abstract class AbstractJdbcRepository<T, ID> {
     // Абстрактні методи — підкласи зобов'язані їх реалізувати
     // =========================================================
 
-    /**
-     * Перетворює поточний рядок ResultSet у доменний об'єкт типу T. Реалізація патерну Data
-     * Mapper.
-     *
-     * @param rs ResultSet, що вже позиціонований на рядку (rs.next() = true)
-     * @return доменний об'єкт
-     */
+    /** Перетворює поточний рядок ResultSet у доменний об'єкт. */
     protected abstract T mapRow(ResultSet rs) throws SQLException;
 
-    /**
-     * Назва таблиці у БД (наприклад, "books", "authors").
-     *
-     * @return назва таблиці
-     */
+    /** Назва таблиці у БД. */
     protected abstract String getTableName();
 
-    /**
-     * Назва колонки первинного ключа (наприклад, "book_id", "author_id").
-     *
-     * @return назва колонки PK
-     */
+    /** Назва колонки первинного ключа. */
     protected abstract String getIdColumnName();
 
-    /**
-     * SQL-запит для пошуку одного запису за первинним ключем.
-     *
-     * @return SQL рядок
-     */
+    /** SQL для пошуку за id. */
     protected abstract String getSelectByIdSql();
 
-    /**
-     * SQL-запит для вибірки всіх записів.
-     *
-     * @return SQL рядок
-     */
+    /** SQL для вибірки всіх записів. */
     protected abstract String getSelectAllSql();
 
-    /**
-     * SQL-запит для вставки нового запису.
-     *
-     * @return SQL рядок
-     */
+    /** SQL для INSERT. */
     protected abstract String getInsertSql();
 
-    /**
-     * SQL-запит для оновлення існуючого запису.
-     *
-     * @return SQL рядок
-     */
+    /** SQL для UPDATE. */
     protected abstract String getUpdateSql();
 
-    /**
-     * Встановлює параметри PreparedStatement для INSERT. Data Mapper: Object → PreparedStatement.
-     *
-     * @param stmt підготовлений запит
-     * @param entity сутність з якої беруться значення
-     */
+    /** Встановлює параметри PreparedStatement для INSERT. */
     protected abstract void setInsertParams(PreparedStatement stmt, T entity) throws SQLException;
 
     /**
-     * Встановлює параметри PreparedStatement для UPDATE. ID передається останнім параметром (для
-     * WHERE).
-     *
-     * @param stmt підготовлений запит
-     * @param entity сутність з оновленими даними
+     * Встановлює параметри PreparedStatement для UPDATE. ID — останній параметр (для WHERE).
      */
     protected abstract void setUpdateParams(PreparedStatement stmt, T entity) throws SQLException;
 
-    /**
-     * Повертає первинний ключ сутності. Використовується у deleteById та existsById.
-     *
-     * @param entity сутність
-     * @return первинний ключ типу ID
-     */
-    protected abstract ID getId(T entity);
+    /** Повертає UUID сутності. */
+    protected abstract UUID getId(T entity);
 
     // =========================================================
-    // Конкретні реалізації Template Methods
+    // Template Methods з інтеграцією Identity Map
     // =========================================================
 
     /**
-     * Знаходить сутність за первинним ключем.
+     * Знаходить сутність за UUID.
      *
-     * <p>Template Method: варіативні частини — {@link #getSelectByIdSql()} та {@link
-     * #mapRow(ResultSet)}.
+     * <p>Алгоритм: 1) перевіряємо Identity Map → якщо є, повертаємо без SELECT 2) виконуємо
+     * SELECT з БД 3) кешуємо результат в Identity Map 4) повертаємо результат
      *
-     * @param id первинний ключ
-     * @return Optional зі знайденою сутністю або empty
+     * @param id UUID сутності
+     * @return Optional зі знайденою сутністю
      */
-    public Optional<T> findById(ID id) {
+    public Optional<T> findById(UUID id) {
+        // 1. Перевіряємо кеш — уникаємо зайвого SELECT
+        Optional<T> cached = identityMap.get(id);
+        if (cached.isPresent()) {
+            return cached;
+        }
+
+        // 2. Завантажуємо з БД
         try (Connection conn = connectionManager.getConnection();
               PreparedStatement stmt = conn.prepareStatement(getSelectByIdSql())) {
 
             stmt.setObject(1, id.toString());
 
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+                if (rs.next()) {
+                    T entity = mapRow(rs);
+                    // 3. Кешуємо для майбутніх запитів
+                    identityMap.put(id, entity);
+                    return Optional.of(entity);
+                }
+                return Optional.empty();
             }
 
         } catch (SQLException e) {
@@ -162,9 +122,7 @@ public abstract class AbstractJdbcRepository<T, ID> {
     }
 
     /**
-     * Повертає всі сутності.
-     *
-     * <p>Template Method: варіативна частина — {@link #getSelectAllSql()}.
+     * Повертає всі сутності та кешує кожну.
      *
      * @return список всіх сутностей
      */
@@ -176,7 +134,10 @@ public abstract class AbstractJdbcRepository<T, ID> {
               ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                list.add(mapRow(rs));
+                T entity = mapRow(rs);
+                // Кешуємо кожну завантажену сутність
+                identityMap.put(getId(entity), entity);
+                list.add(entity);
             }
 
         } catch (SQLException e) {
@@ -186,10 +147,7 @@ public abstract class AbstractJdbcRepository<T, ID> {
     }
 
     /**
-     * Зберігає нову сутність.
-     *
-     * <p>Template Method: варіативні частини — {@link #getInsertSql()} та {@link
-     * #setInsertParams(PreparedStatement, T)}.
+     * Зберігає нову сутність та кешує її.
      *
      * @param entity сутність для збереження
      */
@@ -198,15 +156,15 @@ public abstract class AbstractJdbcRepository<T, ID> {
               PreparedStatement stmt = conn.prepareStatement(getInsertSql())) {
 
             setInsertParams(stmt, entity);
-
             int rows = stmt.executeUpdate();
+
             if (rows != 1) {
                 throw new DatabaseException(
-                      "Очікувався 1 вставлений рядок у "
-                            + getTableName()
-                            + ", отримано: "
-                            + rows);
+                      "Очікувався 1 рядок у " + getTableName() + ", отримано: " + rows);
             }
+
+            // Кешуємо після успішного INSERT
+            identityMap.put(getId(entity), entity);
 
         } catch (SQLException e) {
             throw new DatabaseException("Помилка save у таблиці " + getTableName(), e);
@@ -214,10 +172,7 @@ public abstract class AbstractJdbcRepository<T, ID> {
     }
 
     /**
-     * Оновлює існуючу сутність.
-     *
-     * <p>Template Method: варіативні частини — {@link #getUpdateSql()} та {@link
-     * #setUpdateParams(PreparedStatement, T)}.
+     * Оновлює існуючу сутність та оновлює кеш.
      *
      * @param entity сутність з оновленими даними
      */
@@ -226,15 +181,18 @@ public abstract class AbstractJdbcRepository<T, ID> {
               PreparedStatement stmt = conn.prepareStatement(getUpdateSql())) {
 
             setUpdateParams(stmt, entity);
-
             int rows = stmt.executeUpdate();
+
             if (rows == 0) {
                 throw new DatabaseException(
                       "Сутність не знайдена у "
                             + getTableName()
-                            + " для оновлення: id="
+                            + " для id="
                             + getId(entity));
             }
+
+            // Оновлюємо кеш актуальним об'єктом
+            identityMap.put(getId(entity), entity);
 
         } catch (SQLException e) {
             throw new DatabaseException("Помилка update у таблиці " + getTableName(), e);
@@ -242,21 +200,26 @@ public abstract class AbstractJdbcRepository<T, ID> {
     }
 
     /**
-     * Видаляє сутність за первинним ключем. SQL генерується через {@link #getTableName()} та
-     * {@link #getIdColumnName()} — однаковий для всіх таблиць.
+     * Видаляє сутність та прибирає з кешу.
      *
-     * @param id первинний ключ
-     * @return true якщо сутність існувала і була видалена
+     * @param id UUID для видалення
+     * @return true якщо сутність існувала
      */
-    public boolean deleteById(ID id) {
-        String sql =
-              "DELETE FROM " + getTableName() + " WHERE " + getIdColumnName() + " = ?";
+    public boolean deleteById(UUID id) {
+        String sql = "DELETE FROM " + getTableName() + " WHERE " + getIdColumnName() + " = ?";
 
         try (Connection conn = connectionManager.getConnection();
               PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setObject(1, id.toString());
-            return stmt.executeUpdate() > 0;
+            boolean deleted = stmt.executeUpdate() > 0;
+
+            // Видаляємо з кешу незалежно від результату
+            if (deleted) {
+                identityMap.remove(id);
+            }
+
+            return deleted;
 
         } catch (SQLException e) {
             throw new DatabaseException(
@@ -265,7 +228,7 @@ public abstract class AbstractJdbcRepository<T, ID> {
     }
 
     /**
-     * Повертає кількість записів у таблиці. SQL генерується через {@link #getTableName()}.
+     * Повертає кількість записів у таблиці.
      *
      * @return кількість записів
      */
@@ -285,13 +248,19 @@ public abstract class AbstractJdbcRepository<T, ID> {
     }
 
     /**
-     * Перевіряє існування запису за id без завантаження даних. {@code SELECT 1} — найефективніший
-     * спосіб перевірки існування.
+     * Перевіряє існування запису.
      *
-     * @param id первинний ключ
+     * <p>Спочатку перевіряє кеш — якщо є в Identity Map, точно існує в БД.
+     *
+     * @param id UUID для перевірки
      * @return true якщо сутність існує
      */
-    public boolean existsById(ID id) {
+    public boolean existsById(UUID id) {
+        // Якщо є в кеші — точно існує
+        if (identityMap.contains(id)) {
+            return true;
+        }
+
         String sql =
               "SELECT 1 FROM "
                     + getTableName()
@@ -311,5 +280,14 @@ public abstract class AbstractJdbcRepository<T, ID> {
             throw new DatabaseException(
                   "Помилка existsById у таблиці " + getTableName() + " для id=" + id, e);
         }
+    }
+
+    /**
+     * Очищає Identity Map кеш.
+     *
+     * <p>Викликати після завершення бізнес-операції або при потребі перезавантажити дані з БД.
+     */
+    public void clearCache() {
+        identityMap.clear();
     }
 }

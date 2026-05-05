@@ -8,13 +8,13 @@ import java.util.UUID;
 
 public class BookMapper {
   public Book map(ResultSet rs) throws SQLException {
-      //Використовуємо Builder від Lombok
+    // Використовуємо Builder від Lombok
     return Book.builder()
-          .id(rs.getObject("book_id", UUID.class))
-          .title(rs.getString("title"))
-          .price(rs.getBigDecimal("price"))
-          .stockQuantity(rs.getInt("stock_quantity"))
-          .category(Category.builder().id((UUID) rs.getObject("category_id")).build())
-          .build();
+        .id(rs.getObject("book_id", UUID.class))
+        .title(rs.getString("title"))
+        .price(rs.getBigDecimal("price"))
+        .stockQuantity(rs.getInt("stock_quantity"))
+        .category(Category.builder().id((UUID) rs.getObject("category_id")).build())
+        .build();
   }
 }
