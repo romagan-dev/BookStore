@@ -198,9 +198,15 @@ public class SimpleConnectionPool implements AutoCloseable {
    * <p>SQLite не потребує user/password — лише URL у форматі {@code jdbc:sqlite:path/to/db}.
    */
   private Connection createRealConnection() throws SQLException {
-    Connection conn = DriverManager.getConnection(config.url());
-    totalConnections.incrementAndGet();
-    return conn;
+      Connection conn = DriverManager.getConnection(config.url());
+
+      if (config.url().startsWith("jdbc:sqlite")) {
+          try (var stmt = conn.createStatement()) {
+              stmt.execute("PRAGMA foreign_keys = ON");
+          }
+      }
+      totalConnections.incrementAndGet();
+      return conn;
   }
 
   /** Закриває з'єднання без викидання виключень. */

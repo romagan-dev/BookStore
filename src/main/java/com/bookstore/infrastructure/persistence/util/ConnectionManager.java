@@ -1,6 +1,8 @@
 package com.bookstore.infrastructure.persistence.util;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  * Фасад для отримання з'єднань з бази даних.
@@ -49,6 +51,10 @@ public class ConnectionManager implements AutoCloseable {
     return instance;
   }
 
+    public static void resetInstance() {
+        instance = null;
+    }
+
   /**
    * Зручний фабричний метод для SQLite.
    *
@@ -82,7 +88,8 @@ public class ConnectionManager implements AutoCloseable {
         pool.availableCount(), pool.totalCount(), pool.config().maxConnections());
   }
 
-  /** Виводить детальну статистику пулу в консоль */
+
+    /** Виводить детальну статистику пулу в консоль */
   public void printStats() {
     pool.printStats();
   }

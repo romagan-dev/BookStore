@@ -18,9 +18,7 @@
 --  11. supply_items
 -- =============================================================================
 
-PRAGMA foreign_keys = ON;
 
-BEGIN TRANSACTION;
 
 -- =============================================================================
 -- 1. categories — статичний довідник жанрів
@@ -184,31 +182,3 @@ INSERT INTO supply_items (supply_item_id, supply_id, book_id, quantity, unit_cos
     (12, 5, 11, 25,  88.00),  -- Постачання 5: Вибрані поезії
     (13, 5, 1,  15, 120.00);  -- Постачання 5: Маруся Чурай (додатково)
 
-COMMIT;
-
--- =============================================================================
--- Перевірочні запити (можна закоментувати після перевірки)
--- =============================================================================
-
--- Кількість рядків у кожній таблиці
-SELECT 'categories'  AS table_name, COUNT(*) AS row_count FROM categories
-UNION ALL
-SELECT 'authors',    COUNT(*) FROM authors
-UNION ALL
-SELECT 'suppliers',  COUNT(*) FROM suppliers
-UNION ALL
-SELECT 'users',      COUNT(*) FROM users
-UNION ALL
-SELECT 'clients',    COUNT(*) FROM clients
-UNION ALL
-SELECT 'books',      COUNT(*) FROM books
-UNION ALL
-SELECT 'book_authors', COUNT(*) FROM book_authors
-UNION ALL
-SELECT 'sales',      COUNT(*) FROM sales
-UNION ALL
-SELECT 'sale_items', COUNT(*) FROM sale_items
-UNION ALL
-SELECT 'supplies',   COUNT(*) FROM supplies
-UNION ALL
-SELECT 'supply_items', COUNT(*) FROM supply_items;

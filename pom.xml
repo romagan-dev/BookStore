@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.bookstore</groupId>
@@ -15,16 +16,19 @@
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-  <javafx.version>21.0.2</javafx.version>
-  <sqlite.version>3.45.1.0</sqlite.version>
-  <flyway.version>10.10.0</flyway.version>
-  <lombok.version>1.18.32</lombok.version>
-  <junit.version>5.10.2</junit.version>
-  <mockito.version>5.11.0</mockito.version>
-  <slf4j.version>2.0.12</slf4j.version>
-</properties>
+    <javafx.version>21.0.2</javafx.version>
+    <sqlite.version>3.45.1.0</sqlite.version>
+    <flyway.version>10.10.0</flyway.version>
+    <lombok.version>1.18.32</lombok.version>
+    <junit.version>5.10.2</junit.version>
+    <mockito.version>5.11.0</mockito.version>
+    <slf4j.version>2.0.12</slf4j.version>
+    <h2.version>2.2.224</h2.version>
+    <assertj.version>3.25.3</assertj.version>
+  </properties>
 
   <dependencies>
+    <!-- ===== JavaFX ===== -->
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
@@ -35,18 +39,22 @@
       <artifactId>javafx-fxml</artifactId>
       <version>${javafx.version}</version>
     </dependency>
+
+    <!-- ===== SQLite JDBC ===== -->
     <dependency>
       <groupId>org.xerial</groupId>
       <artifactId>sqlite-jdbc</artifactId>
       <version>${sqlite.version}</version>
     </dependency>
 
-    <!-- ===== Flyway — міграції БД ===== -->
+    <!-- ===== Flyway ===== -->
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
       <version>${flyway.version}</version>
     </dependency>
+
+    <!-- ===== Lombok ===== -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
@@ -60,89 +68,99 @@
       <artifactId>slf4j-simple</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
+
+    <!-- ===== JUnit 5 ===== -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- ===== Mockito ===== -->
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- ===== H2 — in-memory БД для тестів ===== -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>${h2.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ===== AssertJ — fluent assertions ===== -->
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
-      <plugins>
-        <!-- ===== Компілятор ===== -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.13.0</version>
-          <configuration>
-            <source>21</source>
-            <target>21</target>
-            <annotationProcessorPaths>
-              <path>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-              </path>
-            </annotationProcessorPaths>
-          </configuration>
-        </plugin>
+    <plugins>
+      <!-- ===== Компілятор ===== -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <source>21</source>
+          <target>21</target>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
 
-        <!-- ===== JavaFX плагін ===== -->
-        <plugin>
-          <groupId>org.openjfx</groupId>
-          <artifactId>javafx-maven-plugin</artifactId>
-          <version>0.0.8</version>
-          <configuration>
-            <mainClass>com.bookstore.Main</mainClass>
-          </configuration>
-        </plugin>
+      <!-- ===== JavaFX ===== -->
+      <plugin>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-maven-plugin</artifactId>
+        <version>0.0.8</version>
+        <configuration>
+          <mainClass>com.bookstore.Main</mainClass>
+        </configuration>
+      </plugin>
 
-        <!-- ===== Spotless — форматування коду (Google Style) ===== -->
-        <plugin>
-          <groupId>com.diffplug.spotless</groupId>
-          <artifactId>spotless-maven-plugin</artifactId>
-          <version>2.44.2</version>
-          <configuration>
-            <java>
-              <googleJavaFormat>
-                <!-- Ця версія підтримує Java 21 без конфліктів з внутрішнім javac -->
-                <version>1.22.0</version>
-                <style>GOOGLE</style>
-                <reflowLongStrings>true</reflowLongStrings>
-              </googleJavaFormat>
-              <removeUnusedImports/>
-            </java>
-          </configuration>
-          <executions>
-            <execution>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <phase>compile</phase>
-            </execution>
-          </executions>
-        </plugin>
+      <!-- ===== Spotless — Google Style ===== -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.43.0</version>
+        <configuration>
+          <java>
+            <googleJavaFormat>
+              <version>1.19.2</version>
+              <style>GOOGLE</style>
+              <indentSize>4</indentSize>
+            </googleJavaFormat>
+          </java>
+        </configuration>
+      </plugin>
 
-        <!-- ===== SonarQube — аналіз якості коду ===== -->
-        <plugin>
-          <groupId>org.sonarsource.scanner.maven</groupId>
-          <artifactId>sonar-maven-plugin</artifactId>
-          <version>3.11.0.3922</version>
-        </plugin>
+      <!-- ===== SonarQube ===== -->
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.11.0.3922</version>
+      </plugin>
 
-        <!-- ===== Тести ===== -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.2.5</version>
-        </plugin>
-      </plugins>
-    </build>
+      <!-- ===== Тести ===== -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+    </plugins>
+  </build>
 </project>
