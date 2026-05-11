@@ -122,6 +122,15 @@ public abstract class AbstractJdbcRepository<T, ID> {
     }
 
     /**
+     * Повертає ConnectionManager для використання у сервісному шарі.
+     *
+     * @return менеджер з'єднань
+     */
+    public ConnectionManager getConnectionManager() {
+        return connectionManager;
+    }
+
+    /**
      * Повертає всі сутності та кешує кожну.
      *
      * @return список всіх сутностей

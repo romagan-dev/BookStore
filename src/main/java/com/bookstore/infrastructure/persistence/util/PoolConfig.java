@@ -22,6 +22,6 @@ public record PoolConfig(String url, int minConnections, int maxConnections, lon
    * @return конфігурація пулу
    */
   public static PoolConfig forSQLite(String dbPath) {
-    return new PoolConfig("jdbc:sqlite" + dbPath, 2, 10, 5000L);
+    return new PoolConfig("jdbc:sqlite:" + dbPath, 2, 10, 5000L);
   }
 }

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane
+  xmlns="http://javafx.com/javafx/21"
+  xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="com.bookstore.presentation.controller.ClientController"
+  stylesheets="@/css/main.css"
+  style="-fx-background-color: #0f0f13;">
+
+  <top>
+    <HBox styleClass="header" alignment="CENTER_LEFT" spacing="16">
+      <Label text="Клієнти"
+        style="-fx-text-fill: #e8e6f0; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+      <Label fx:id="countBadge" text="0" styleClass="badge"/>
+      <Region HBox.hgrow="ALWAYS"/>
+      <TextField fx:id="searchField"
+        promptText="🔍  Пошук клієнтів..."
+        styleClass="search-field"
+        prefWidth="240"
+        onKeyReleased="#handleSearch"/>
+      <Button text="+ Додати клієнта"
+        styleClass="btn-primary"
+        onAction="#handleAdd"/>
+    </HBox>
+  </top>
+
+  <center>
+    <HBox spacing="0">
+
+      <VBox HBox.hgrow="ALWAYS" spacing="0"
+        style="-fx-padding: 24px;">
+        <TableView fx:id="clientTable" VBox.vgrow="ALWAYS">
+          <columns>
+            <TableColumn fx:id="colFirstName" text="Ім'я" prefWidth="150"/>
+            <TableColumn fx:id="colLastName" text="Прізвище" prefWidth="150"/>
+            <TableColumn fx:id="colPhone" text="Телефон" prefWidth="150"/>
+            <TableColumn fx:id="colEmail" text="Email" prefWidth="200"/>
+            <TableColumn fx:id="colActions" text="Дії" prefWidth="120"/>
+          </columns>
+          <placeholder>
+            <Label text="Клієнтів не знайдено" styleClass="label-secondary"/>
+          </placeholder>
+        </TableView>
+      </VBox>
+
+      <VBox fx:id="editPanel"
+        style="-fx-background-color: #1a1a24; -fx-border-color: transparent transparent transparent #2e2e40; -fx-border-width: 0 0 0 1; -fx-padding: 24px;"
+        spacing="16"
+        minWidth="300" maxWidth="300"
+        managed="false" visible="false">
+
+        <Label fx:id="editPanelTitle" text="Новий клієнт"
+          style="-fx-text-fill: #e8e6f0; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+        <VBox spacing="6">
+          <Label text="Ім'я *" styleClass="label-secondary"/>
+          <TextField fx:id="firstNameField"
+            promptText="Введіть ім'я" styleClass="text-field"/>
+          <Label fx:id="firstNameError" styleClass="label-error"
+            text="" visible="false" managed="false"/>
+        </VBox>
+
+        <VBox spacing="6">
+          <Label text="Прізвище *" styleClass="label-secondary"/>
+          <TextField fx:id="lastNameField"
+            promptText="Введіть прізвище" styleClass="text-field"/>
+          <Label fx:id="lastNameError" styleClass="label-error"
+            text="" visible="false" managed="false"/>
+        </VBox>
+
+        <VBox spacing="6">
+          <Label text="Телефон" styleClass="label-secondary"/>
+          <TextField fx:id="phoneField"
+            promptText="+380XXXXXXXXX" styleClass="text-field"/>
+          <Label fx:id="phoneError" styleClass="label-error"
+            text="" visible="false" managed="false"/>
+        </VBox>
+
+        <VBox spacing="6">
+          <Label text="Email" styleClass="label-secondary"/>
+          <TextField fx:id="emailField"
+            promptText="example@email.com" styleClass="text-field"/>
+          <Label fx:id="emailError" styleClass="label-error"
+            text="" visible="false" managed="false"/>
+        </VBox>
+
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <VBox spacing="8">
+          <Button fx:id="saveButton" text="Зберегти"
+            styleClass="btn-primary" maxWidth="Infinity"
+            onAction="#handleSave"/>
+          <Button text="Скасувати"
+            styleClass="btn-secondary" maxWidth="Infinity"
+            onAction="#handleCancel"/>
+        </VBox>
+
+      </VBox>
+
+    </HBox>
+  </center>
+
+</BorderPane>

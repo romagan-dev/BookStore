@@ -68,7 +68,7 @@ public class ClientServiceImpl implements ClientService {
      * @return створений клієнт
      */
     @Override
-    public Client create(String firstName, String lastName, String email, String phone) {
+    public Client create(String firstName, String lastName, String phone, String email) {
         validateName(firstName, "Ім'я");
         validateName(lastName, "Прізвище");
         validatePhoneUnique(phone, null);

@@ -146,7 +146,7 @@ public class BookServiceImpl implements BookService {
         }
 
         String sql = "INSERT OR IGNORE INTO book_authors (book_id, author_id) VALUES (?, ?)";
-        try (Connection conn = bookRepository.connectionManager.getConnection();
+        try (Connection conn = bookRepository.getConnectionManager().getConnection();
               PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, bookId.toString());
             stmt.setString(2, authorId.toString());
@@ -165,7 +165,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public void removeAuthor(UUID bookId, UUID authorId) {
         String sql = "DELETE FROM book_authors WHERE book_id = ? AND author_id = ?";
-        try (Connection conn = bookRepository.connectionManager.getConnection();
+        try (Connection conn = bookRepository.getConnectionManager().getConnection();
               PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, bookId.toString());
             stmt.setString(2, authorId.toString());
