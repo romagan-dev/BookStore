@@ -46,7 +46,7 @@ public class MainController {
     @FXML
     private void showClients() {
         setActive(btnClients);
-        loadContent("/view/clients.fxml");
+        loadContent("/view/Clients.fxml");
     }
 
     @FXML
@@ -99,21 +99,29 @@ public class MainController {
      */
     private void loadContent(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                  getClass().getResource(fxmlPath));
-            if (loader.getLocation() == null) {
-                // Файл не існує — показуємо заглушку
-                Label placeholder = new Label("🚧  Розділ у розробці");
-                placeholder.setStyle("-fx-text-fill: #5a5875; -fx-font-size: 18px;");
-                contentArea.getChildren().setAll(placeholder);
+            var resource = getClass().getResource(fxmlPath);
+
+            if (resource == null) {
+                // Тепер ми точно знатимемо, який шлях "битий"
+                System.err.println("[DEBUG] Ресурс не знайдено: " + fxmlPath);
+
+                Label errorLabel = new Label("❌ Помилка: Не знайдено " + fxmlPath);
+                errorLabel.setStyle("-fx-text-fill: red; -fx-font-size: 14px;");
+                contentArea.getChildren().setAll(errorLabel);
                 return;
             }
+
+            FXMLLoader loader = new FXMLLoader(resource);
             Node content = loader.load();
             contentArea.getChildren().setAll(content);
+
         } catch (IOException e) {
-            Label placeholder = new Label("🚧  Розділ у розробці");
-            placeholder.setStyle("-fx-text-fill: #5a5875; -fx-font-size: 18px;");
-            contentArea.getChildren().setAll(placeholder);
+            // КРИТИЧНО: виводимо помилку в консоль, щоб зрозуміти, ЧОМУ не завантажився FXML
+            e.printStackTrace();
+
+            Label errorLabel = new Label("❌ Помилка завантаження: " + e.getMessage());
+            errorLabel.setStyle("-fx-text-fill: red;");
+            contentArea.getChildren().setAll(errorLabel);
         }
     }
 

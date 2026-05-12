@@ -14,7 +14,7 @@
   xmlns="http://javafx.com/javafx/21"
   xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="com.bookstore.presentation.controller.ClientController"
-  stylesheets="@/css/main.css"
+  stylesheets="@../css/main.css"
   style="-fx-background-color: #0f0f13;">
 
   <top>
